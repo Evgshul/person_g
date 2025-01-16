@@ -3,7 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 
-	"github.com/evgshul/person_g/internal/entity/internal/entity"
+	"github.com/evgshul/person_g/internal/entity"
 )
 
 type PersonRepository interface {
