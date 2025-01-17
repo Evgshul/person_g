@@ -31,7 +31,7 @@ func (c *PersonController) CreatePerson(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, person)
 }
 
-func (c *PersonController) getPersonsList(ctx *gin.Context) {
+func (c *PersonController) GetPersonsList(ctx *gin.Context) {
 	persons, err := c.service.GetPersonsList()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
