@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 
 	"github.com/evgshul/person_g/internal/entity"
@@ -46,4 +48,15 @@ func (r *personRepository) DeletePerson(id int) error {
 func (r *personRepository) UpdatePerson(person *entity.Person) (*entity.Person, error) {
 	err := r.db.Save(person).Error
 	return person, err
+}
+
+func (r *personRepository) InitTable() error {
+	log.Println("Initializing persons table...")
+	err := r.db.AutoMigrate((&entity.Person{}))
+	if err != nil {
+		log.Printf("Failed to initialize persons table: %v\n", err)
+		return err
+	}
+	log.Println("Persons table initialized successfully.")
+	return nil
 }

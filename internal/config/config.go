@@ -45,37 +45,7 @@ func InitDb() *gorm.DB {
 	sqlDb.SetMaxOpenConns(100)
 	sqlDb.SetConnMaxLifetime(10 * time.Minute)
 
-	//createTableQuery := `
-	//CREATE TABLE IF NOT EXISTS persons (
-	//    id INT AUTO_INCREMENT PRIMARY KEY,
-	//    fullname VARCHAR(100),
-	//    gender VARCHAR(10),
-	//    phone_number VARCHAR(20),
-	//    email VARCHAR(100)
-	//);`
-	//err = db.Create(createTableQuery).Error
-	//if err != nil {
-	//	log.Fatalf("Failed to create table: %v", err)
-	//}
-	log.Println("Database connected and initialized successfully!")
 	return db
-}
-
-func CreatTablePerson(db gorm.DB) *gorm.DB {
-	createTableQuery := `
-    CREATE TABLE IF NOT EXISTS persons (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        fullname VARCHAR(100),
-        gender VARCHAR(10),
-        phone_number VARCHAR(20),
-        email VARCHAR(100)
-    );`
-
-	err := db.Create(createTableQuery)
-	if err != nil {
-		log.Fatalf("Failed to create table: %v", err)
-	}
-	return &db
 }
 
 func CloseDatabaseConnection() {

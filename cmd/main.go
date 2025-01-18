@@ -13,10 +13,10 @@ import (
 func main() {
 
 	db := config.InitDb()
-	//config.CreatTablePerson(*db)
 	defer config.CloseDatabaseConnection()
 
 	personRepo := repository.NewPersonRepository(db)
+
 	personService := service.NewPersonService(personRepo)
 	personController := controller.NewPersonController(personService)
 
