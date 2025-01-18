@@ -17,6 +17,10 @@ func main() {
 
 	personRepo := repository.NewPersonRepository(db)
 
+	err := personRepo.InitTable()
+	if err != nil {
+		log.Fatalf("Could not initialize the database: %v", err)
+	}
 	personService := service.NewPersonService(personRepo)
 	personController := controller.NewPersonController(personService)
 

@@ -14,6 +14,8 @@ type PersonRepository interface {
 	GetById(id int) (*entity.Person, error)
 	DeletePerson(id int) error
 	UpdatePerson(person *entity.Person) (*entity.Person, error)
+
+	InitTable() error
 }
 
 type personRepository struct {
