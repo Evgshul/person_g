@@ -1,11 +1,12 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/evgshul/person_g/internal/dto"
 	"github.com/evgshul/person_g/internal/entity"
-	_ "github.com/evgshul/person_g/internal/entity/errors"
 	"github.com/evgshul/person_g/internal/repository"
 )
 
@@ -26,6 +27,22 @@ func NewPersonService(repo repository.PersonRepository) PersonService {
 }
 
 func (s *personService) CreatePerson(dto *dto.PersonDto) (*dto.ResponsePersonDto, error) {
+
+	isNameExist, err := s.isFullnameExist(dto.FullName)
+	if err != nil {
+		return nil, err
+	}
+	if isNameExist {
+		return nil, fmt.Errorf("full name %s taken", dto.FullName)
+	}
+
+	isEmailExist, err := s.isEmailExist(dto.Email)
+	if err != nil {
+		return nil, err
+	}
+	if isEmailExist {
+		return nil, fmt.Errorf("email %s taken please provide another", dto.Email)
+	}
 	person := mapPersonDtoToPerson(dto)
 	createdPerson, err := s.repo.Create(person)
 	if err != nil {
@@ -61,12 +78,42 @@ func (s *personService) DeletePerson(id int) error {
 func (s *personService) UpdatePerson(id int, personToUpdate dto.PersonDto) (*dto.ResponsePersonDto, error) {
 	person, err := s.repo.GetById(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("person not found")
 	}
-	person.Fullname = personToUpdate.FullName
-	person.Gender = personToUpdate.Gender
-	person.PhoneNumber = personToUpdate.PhoneNumber
-	person.Email = personToUpdate.Email
+
+	personNameToUpdate := personToUpdate.FullName
+	if personNameToUpdate != "" && personNameToUpdate != person.Fullname {
+		isFullNameNotUnique, err := s.isFullnameExist(personNameToUpdate)
+		if err != nil {
+			return nil, err
+		}
+		if isFullNameNotUnique {
+			return nil, fmt.Errorf("person_service :: UpdatePerson :: fullname %s not unique,"+
+				" available only one unique entry for a person", personNameToUpdate)
+
+		}
+		person.Fullname = personNameToUpdate
+	}
+
+	if strings.TrimSpace(personToUpdate.Gender) != "" && personToUpdate.Gender != person.Gender {
+		person.Gender = personToUpdate.Gender
+	}
+
+	if strings.TrimSpace(personToUpdate.PhoneNumber) != "" && personToUpdate.PhoneNumber != person.PhoneNumber {
+		person.PhoneNumber = personToUpdate.PhoneNumber
+	}
+
+	emailToUpdate := personToUpdate.Email
+	if strings.TrimSpace(emailToUpdate) != "" && emailToUpdate != person.Email {
+		isPhoneNumberExist, err := s.isEmailExist(emailToUpdate)
+		if err != nil {
+			return nil, err
+		}
+		if isPhoneNumberExist {
+			return nil, fmt.Errorf("person_service :: UpdatePerson :: email %s is taken, please input another", emailToUpdate)
+		}
+		person.Email = emailToUpdate
+	}
 
 	updatedPerson, err := s.repo.UpdatePerson(person)
 	if err != nil {
@@ -92,4 +139,26 @@ func mapPersonDtoToPerson(personDto *dto.PersonDto) *entity.Person {
 		PhoneNumber: personDto.PhoneNumber,
 		Email:       personDto.Email,
 	}
+}
+
+func (s *personService) isFullnameExist(fullname string) (bool, error) {
+	person, err := s.repo.GetPersonByFullname(fullname)
+	if err != nil {
+		return false, err
+	}
+	if person != nil {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (s *personService) isEmailExist(email string) (bool, error) {
+	person, err := s.repo.GetPersonByEmail(email)
+	if err != nil {
+		return false, err
+	}
+	if person != nil {
+		return true, nil
+	}
+	return false, nil
 }

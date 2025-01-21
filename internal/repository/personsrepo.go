@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"log"
 
 	"gorm.io/gorm"
@@ -12,6 +13,8 @@ type PersonRepository interface {
 	Create(person *entity.Person) (*entity.Person, error)
 	GetPersons() ([]entity.Person, error)
 	GetById(id int) (*entity.Person, error)
+	GetPersonByFullname(fullName string) (*entity.Person, error)
+	GetPersonByEmail(email string) (*entity.Person, error)
 	DeletePerson(id int) error
 	UpdatePerson(person *entity.Person) (*entity.Person, error)
 
@@ -43,15 +46,41 @@ func (r *personRepository) GetById(id int) (*entity.Person, error) {
 	return &person, err
 }
 
+func (r *personRepository) GetPersonByFullname(fullName string) (*entity.Person, error) {
+	var person entity.Person
+	result := r.db.Where("fullname = ?", fullName).First(&person)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil // records not found
+		}
+		return nil, result.Error
+	}
+	return &person, nil
+}
+
+func (r *personRepository) GetPersonByEmail(email string) (*entity.Person, error) {
+	var person entity.Person
+	result := r.db.Where("email = ?", email).First(&person)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil // records not found
+		}
+		return nil, result.Error
+	}
+	return &person, nil
+}
+
 func (r *personRepository) DeletePerson(id int) error {
 	return r.db.Delete(&entity.Person{}, id).Error
 }
 
 func (r *personRepository) UpdatePerson(person *entity.Person) (*entity.Person, error) {
+
 	err := r.db.Save(person).Error
 	return person, err
 }
 
+// InitTable create table persons if not exist
 func (r *personRepository) InitTable() error {
 	log.Println("Initializing persons table...")
 	err := r.db.AutoMigrate((&entity.Person{}))
