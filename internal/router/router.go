@@ -22,6 +22,7 @@ func SetupRouter(personController controller.PersonController) *gin.Engine {
 			personRoutes.POST("", personController.CreatePerson)
 			personRoutes.GET("", personController.GetPersonsList)
 			personRoutes.GET("/:id", personController.GetPersonById)
+			personRoutes.GET("/search", personController.SearchPersons)
 			personRoutes.PUT("/:id", personController.UpdatePerson)
 			personRoutes.DELETE("/:id", personController.DeletePerson)
 		}

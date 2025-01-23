@@ -50,6 +50,21 @@ func (c *PersonController) GetPersonById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, person)
 }
 
+func (c *PersonController) SearchPersons(ctx *gin.Context) {
+	query := ctx.Query("q")
+	if query == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Query parameter 'q' is required"})
+	}
+
+	persons, err := c.service.SearchPersons(query)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, persons)
+}
+
 func (c *PersonController) UpdatePerson(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	var personDto dto.PersonDto

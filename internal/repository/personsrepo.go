@@ -15,6 +15,7 @@ type PersonRepository interface {
 	GetById(id int) (*entity.Person, error)
 	GetPersonByFullname(fullName string) (*entity.Person, error)
 	GetPersonByEmail(email string) (*entity.Person, error)
+	SearchPersons(keyword string) ([]entity.Person, error)
 	DeletePerson(id int) error
 	UpdatePerson(person *entity.Person) (*entity.Person, error)
 
@@ -68,6 +69,18 @@ func (r *personRepository) GetPersonByEmail(email string) (*entity.Person, error
 		return nil, result.Error
 	}
 	return &person, nil
+}
+
+func (r *personRepository) SearchPersons(keyword string) ([]entity.Person, error) {
+	var persons []entity.Person
+	searchQuery := "%" + keyword + "%"
+	err := r.db.Where(
+		"fullname LIKE ? OR gender LIKE ? OR phone_number Like ? OR email LIKE ?",
+		searchQuery, searchQuery, searchQuery, searchQuery).Find(&persons).Error
+	if err != nil {
+		return nil, err
+	}
+	return persons, nil
 }
 
 func (r *personRepository) DeletePerson(id int) error {

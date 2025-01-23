@@ -14,6 +14,7 @@ type PersonService interface {
 	CreatePerson(dto *dto.PersonDto) (*dto.ResponsePersonDto, error)
 	GetPersonsList() ([]dto.ResponsePersonDto, error)
 	GetPersonById(id int) (*dto.ResponsePersonDto, error)
+	SearchPersons(keyword string) ([]dto.ResponsePersonDto, error)
 	DeletePerson(id int) error
 	UpdatePerson(id int, dto dto.PersonDto) (*dto.ResponsePersonDto, error)
 }
@@ -69,6 +70,25 @@ func (s *personService) GetPersonById(id int) (*dto.ResponsePersonDto, error) {
 		return nil, err
 	}
 	return mapToResponsePersonDto(person), nil
+}
+
+func (s *personService) SearchPersons(key string) ([]dto.ResponsePersonDto, error) {
+	persons, err := s.repo.SearchPersons(key)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseDtos []dto.ResponsePersonDto
+	for _, person := range persons {
+		responseDtos = append(responseDtos, dto.ResponsePersonDto{
+			ID:          person.ID,
+			FullName:    person.Fullname,
+			Gender:      person.Gender,
+			PhoneNumber: person.PhoneNumber,
+			Email:       person.Email,
+		})
+	}
+	return responseDtos, nil
 }
 
 func (s *personService) DeletePerson(id int) error {
